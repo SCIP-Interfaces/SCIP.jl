@@ -1,32 +1,24 @@
-using Clang
+using Clang.Generators
+using SCIP_jll
 
-HEADER_BASE = "/usr/include" # using system-wide installation of SCIP
-all_headers = readdir(joinpath(HEADER_BASE, "scip"))
-scip_headers = vcat(
-    filter(h -> startswith(h, "type_"), all_headers),
-    filter(h -> startswith(h, "pub_"), all_headers),
-    filter(h -> startswith(h, "scip_"), all_headers),
-    "scipdefplugins.h",
-    filter(h -> startswith(h, "cons_"), all_headers),
-    "intervalarith.h",                                 # for nlpi/pub_expr
-)
-lpi_headers = ["type_lpi.h"]
-nlpi_headers = ["type_expr.h", "type_nlpi.h", "type_exprinterpret.h", "pub_expr.h"]
+cd(@__DIR__)
 
-headers = vcat(
-    [joinpath(HEADER_BASE, "scip", h) for h in scip_headers],
-    [joinpath(HEADER_BASE, "lpi", h) for h in lpi_headers],
-    [joinpath(HEADER_BASE, "nlpi", h) for h in nlpi_headers],
-)
+const HEADER_BASE = joinpath(SCIP_jll.artifact_dir, "include")
+const SCIP_H = joinpath(HEADER_BASE, "scip", "scip.h")
+const SCIP_DEF_PLUGINS_H = joinpath(HEADER_BASE, "scip", "scipdefplugins.h")
+const MEMORY_H = joinpath(HEADER_BASE, "blockmemshell", "memory.h")
+const TYPE_LIP_H = joinpath(HEADER_BASE, "lpi", "type_lpi.h")
+const TYPE_EXPR = joinpath(HEADER_BASE, "nlpi", "type_expr.h")
+const TYPE_NLPI = joinpath(HEADER_BASE, "nlpi", "type_nlpi.h")
+const NLPI_PUB_EXPR_H = joinpath(HEADER_BASE, "nlpi", "pub_expr.h")
 
-context = Clang.init(
-    headers=headers,
-    common_file="commons.jl",
-    output_dir="../src/wrapper",
-    clang_includes=vcat(HEADER_BASE, LLVM_INCLUDE),
-    clang_args = ["-I", HEADER_BASE],
-    clang_diagnostics=true,
-    header_wrapped=(header, cursorname) -> header == cursorname,
-    header_library=header_name -> "libscip"
-)
-Clang.run(context)
+headers = [SCIP_H, SCIP_DEF_PLUGINS_H, MEMORY_H, TYPE_LIP_H, TYPE_EXPR, TYPE_NLPI, NLPI_PUB_EXPR_H]
+
+options = load_options(joinpath(@__DIR__, "generator.toml"))
+
+args = get_default_args()
+push!(args, "-I$HEADER_BASE")
+
+ctx = create_context(headers, args, options)
+
+build!(ctx)

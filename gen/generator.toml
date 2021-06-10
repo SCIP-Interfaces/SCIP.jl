@@ -1,0 +1,28 @@
+[general]
+library_name = "libscip"
+output_file_path = "../src/LibSCIP.jl"
+module_name = "LibSCIP"
+prologue_file_path = "./prologue.jl"
+epilogue_file_path = "./epilogue.jl"
+export_symbol_prefixes = ["SCIP_", "SCIP", "BMS_"]
+
+use_julia_native_enum_type = true
+use_deterministic_symbol = true
+
+printer_blacklist = [
+    "SCIP_DEPRECATED_EXPORT",
+    "SCIP_DEPRECATED_NO_EXPORT",
+    "GCC_VERSION",
+    "INLINE",
+    "__FILENAME__",
+    "SCIPerrorMessage",
+    "RESTRICT",
+    "printError",
+    "printErrorHeader",
+]
+
+[codegen]
+opaque_as_mutable_struct = false
+
+[codegen.macro]
+macro_mode = "basic"

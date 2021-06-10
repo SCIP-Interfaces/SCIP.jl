@@ -87,7 +87,7 @@ function get_parameter(scipd::SCIPData, name::AbstractString)
         @SCIP_CALL SCIPgetCharParam(scipd, name, value)
         return Char(value[])
     elseif paramtype === SCIP_PARAMTYPE_STRING
-        value = Ref{Cstring}()
+        value = Ref{Ptr{Cchar}}()
         @SCIP_CALL SCIPgetStringParam(scipd, name, value)
         return unsafe_string(value[])
     else
